@@ -8,8 +8,8 @@ db = SQLAlchemy()
 
 
 class UserRole(enum.Enum):
-    stylist = "stylist"
-    client = "client"
+    STYLIST = "stylist"
+    CLIENT = "client"
 
 
 class AppointmentStatus(enum.Enum):
@@ -29,7 +29,8 @@ class User(db.Model):
     role: Mapped[UserRole] = mapped_column(Enum(UserRole), nullable=False)
     create_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now())
-    is_active: Mapped[bool] = mapped_column(Boolean(), nullable=False, default=True)
+    is_active: Mapped[bool] = mapped_column(
+        Boolean(), nullable=False, default=True)
 
     stylist: Mapped['Stylist'] = relationship(back_populates='user')
     client: Mapped['Client'] = relationship(back_populates='userClient')
@@ -88,7 +89,8 @@ class Client(db.Model):
 class Services(db.Model):
     __tablename__ = 'services'
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    stylist_id: Mapped[int] = mapped_column(ForeignKey('stylist.id'), nullable=False)
+    stylist_id: Mapped[int] = mapped_column(
+        ForeignKey('stylist.id'), nullable=False)
     description: Mapped[str] = mapped_column(String(500), nullable=False)
     name: Mapped[str] = mapped_column(String(120), nullable=False)
     price: Mapped[float] = mapped_column(Float)
@@ -146,12 +148,16 @@ class Appointments(db.Model):
     reviewaApointment: Mapped[list['Review']] = relationship(
         back_populates='appointmentReview')
 
+
 class Messages(db.Model):
     __tablename__ = 'messages'
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    stylist_id: Mapped[int] = mapped_column(ForeignKey('stylist.id'), nullable=False)
-    client_id: Mapped[int] = mapped_column(ForeignKey('client.id'), nullable=False)
-    appointment_id: Mapped[int] = mapped_column(ForeignKey('appointments.id'), nullable=False)
+    stylist_id: Mapped[int] = mapped_column(
+        ForeignKey('stylist.id'), nullable=False)
+    client_id: Mapped[int] = mapped_column(
+        ForeignKey('client.id'), nullable=False)
+    appointment_id: Mapped[int] = mapped_column(
+        ForeignKey('appointments.id'), nullable=False)
     content: Mapped[str] = mapped_column(String(500), nullable=False)
     is_read: Mapped[bool] = mapped_column(Boolean)
     create_at: Mapped[datetime] = mapped_column(
@@ -171,9 +177,12 @@ class Review(db.Model):
                       name='only_review_per_appointment'),)
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    stylist_id: Mapped[int] = mapped_column(ForeignKey('stylist.id'), nullable=False)
-    client_id: Mapped[int] = mapped_column(ForeignKey('client.id'), nullable=False)
-    appointment_id: Mapped[int] = mapped_column(ForeignKey('appointments.id'), nullable=False)
+    stylist_id: Mapped[int] = mapped_column(
+        ForeignKey('stylist.id'), nullable=False)
+    client_id: Mapped[int] = mapped_column(
+        ForeignKey('client.id'), nullable=False)
+    appointment_id: Mapped[int] = mapped_column(
+        ForeignKey('appointments.id'), nullable=False)
     rating: Mapped[int] = mapped_column(Integer)
     comment: Mapped[str] = mapped_column(String(500))
     create_at: Mapped[datetime] = mapped_column(

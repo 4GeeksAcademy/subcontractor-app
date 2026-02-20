@@ -6,10 +6,17 @@ from flask import Flask, request, jsonify, url_for, send_from_directory
 from flask_migrate import Migrate
 from flask_swagger import swagger
 from api.utils import APIException, generate_sitemap
-from api.models import db
+from api.models import db, User, UserRole
 from api.routes import api
 from api.admin import setup_admin
 from api.commands import setup_commands
+
+from flask_jwt_extended import create_access_token
+from flask_jwt_extended import get_jwt_identity
+from flask_jwt_extended import jwt_required
+from flask_jwt_extended import JWTManager
+from flask_bcrypt import Bcrypt
+
 
 # from models import Person
 
@@ -17,6 +24,9 @@ ENV = "development" if os.getenv("FLASK_DEBUG") == "1" else "production"
 static_file_dir = os.path.join(os.path.dirname(
     os.path.realpath(__file__)), '../dist/')
 app = Flask(__name__)
+bcrypt = Bcrypt(app)
+
+
 app.url_map.strict_slashes = False
 
 # database condiguration
@@ -57,6 +67,8 @@ def sitemap():
     return send_from_directory(static_file_dir, 'index.html')
 
 # any other endpoint will try to serve it like a static file
+
+
 @app.route('/<path:path>', methods=['GET'])
 def serve_any_other_file(path):
     if not os.path.isfile(os.path.join(static_file_dir, path)):
@@ -64,6 +76,35 @@ def serve_any_other_file(path):
     response = send_from_directory(static_file_dir, path)
     response.cache_control.max_age = 0  # avoid cache memory
     return response
+
+
+@app.route('/api/user/stylist/register', methods=['POST'])
+def register_stylist():
+    body = request.get_json(silent=True)
+    if body is None:
+        return jsonify({'msg': 'All fields required'}), 400
+    if 'name' not in body:
+        return jsonify({'msg': 'Name is required'}), 400
+    if 'email' not in body:
+        return jsonify({'msg': 'Email is required'}), 400
+    if 'password' not in body:
+        return jsonify({'msg': 'Password is required'}), 400
+
+    user = User.query.filter_by(email=body['email']).first()
+    if user != None:
+        return jsonify({'msg': 'This email already have an account'})
+
+    new_user = User()
+
+    new_user.name = body['name']
+    new_user.email = body['email']
+    new_user.role = UserRole.STYLIST
+    new_user.is_active = True
+    pw_hash = bcrypt.generate_password_hash(body['password']).decode('utf-8')
+    new_user.password = pw_hash
+    db.session.add(new_user)
+    db.session.commit()
+    return jsonify({'msg': 'User create succesfully'}), 200
 
 
 # this only runs if `$ python src/main.py` is executed
