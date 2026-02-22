@@ -3,6 +3,7 @@ from datetime import datetime, time
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import String, Boolean, Integer, Enum, DateTime, func, ForeignKey, Float, UniqueConstraint, Date, Numeric
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from decimal import Decimal
 
 db = SQLAlchemy()
 
@@ -74,7 +75,7 @@ class Provider(db.Model):
     cover_image: Mapped[str] = mapped_column(String(20), nullable=False)
     is_verified: Mapped[bool] = mapped_column(Boolean, default=False)
     create_at: Mapped[datetime] = mapped_column(
-        DateTime(timeZone=True), server_default=func.now())
+        DateTime(timezone=True), server_default=func.now())
 
     stylist: Mapped[list['Stylist']] = relationship(
         back_populates='provider_styl')
@@ -84,9 +85,9 @@ class Provider(db.Model):
     payment_by: Mapped[list['Payment']] = relationship(
         back_populates='provider_payment')
     project_provider: Mapped[list['PortfolioProject']
-                             ] = relationship(back_populates='provider_projec')
+                             ] = relationship(back_populates='provider_project')
     messageProvider: Mapped[list['Messages']] = relationship(
-        back_populates='stylistMessage')
+        back_populates='providerMessage')
     app_provider: Mapped[list['Appointments']] = relationship(
         back_populates='provider_appointment')
     favorite_by: Mapped[list['Favorite']] = relationship(
@@ -194,7 +195,7 @@ class Availability(db.Model):
 class Appointments(db.Model):
     __tablename__ = 'appointments'
     __table_args__ = (UniqueConstraint(
-        "stylist_id", "apointment_date", name="unique_stylist_booking"))
+        "stylist_id", "apointment_date", name="unique_stylist_booking"),)
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     stylist_id: Mapped[int] = mapped_column(
         ForeignKey('stylist.id'), nullable=False)
