@@ -9,15 +9,15 @@ db = SQLAlchemy()
 
 
 class UserRole(enum.Enum):
-    PROVIDER = "provider"
-    CLIENT = "client"
+    CONTRACTOR = "contractor"
+    CUSTOMER = "customer"
 
 
-class AppointmentStatus(enum.Enum):
+class JobStatus(enum.Enum):
     pending = "pending"
-    confirmed = "confirmed"
-    canceled = "canceled"
+    in_progress = "in_progress"
     completed = "completed"
+    canceled = "canceled"
 
 
 class PaymentMethod(enum.Enum):
@@ -61,11 +61,11 @@ class User(db.Model):
         }
 
 
-class Provider(db.Model):
-    __tablename__ = 'provider'
+class Contractor(db.Model):
+    __tablename__ = 'contractor'
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey('user.id'), nullable=False)
-    name: Mapped[str] = mapped_column(String(120))
+    business_name: Mapped[str] = mapped_column(String(120))
     description: Mapped[str] = mapped_column(String(500), nullable=False)
     address: Mapped[str] = mapped_column(String(120), nullable=False)
     latitude: Mapped[float] = mapped_column(Float, nullable=False)
@@ -74,6 +74,12 @@ class Provider(db.Model):
     logo_image: Mapped[str] = mapped_column(String(), nullable=False)
     cover_image: Mapped[str] = mapped_column(String(20), nullable=False)
     is_verified: Mapped[bool] = mapped_column(Boolean, default=False)
+    business_email: Mapped[str] = mapped_column(str())
+    website_slug: Mapped[str] = mapped_column(String())
+    about: Mapped[str] = mapped_column(str())
+    payment_link: Mapped[str] = mapped_column(str())
+    subscription_status: Mapped[str] = mapped_column()
+    plan_type: Mapped[str] = mapped_column(str)
     create_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now())
 
@@ -94,36 +100,15 @@ class Provider(db.Model):
         back_populates='provider_favorite')
 
 
-class Stylist(db.Model):
-    __tablename__ = 'stylist'
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    provider_id: Mapped[int] = mapped_column(
-        ForeignKey('provider.id'), nullable=False)
-    name: Mapped[str] = mapped_column(String(120))
-    instagram_url: Mapped[str] = mapped_column(String(20), nullable=False)
-    profile_image: Mapped[str] = mapped_column(String, nullable=False)
-    is_featured: Mapped[bool] = mapped_column(Boolean)
-    is_active: Mapped[bool] = mapped_column(Boolean)
-
-    provider_styl: Mapped['Provider'] = relationship(back_populates='stylist')
-    services_stylist: Mapped[list['StylistServices']] = relationship(
-        back_populates='stylistServices', cascade='all, delete-orphan')
-    availability: Mapped[list['Availability']] = relationship(
-        back_populates='stylistAvailability')
-    appointment: Mapped[list['Appointments']] = relationship(
-        back_populates='stylistAppointment')
-    review_by: Mapped[list['Review']] = relationship(
-        back_populates='stylistReview')
-    specialties: Mapped[list['StylistSpecialty']] = relationship(
-        back_populates='stylist_specialty')
-
-
-class Client(db.Model):
+class Customer(db.Model):
     __tablename__ = 'client'
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey('user.id'), nullable=False)
+    contractor_id: Mapped[int] = mapped_column(
+        ForeignKey('contractor.id'), nullable=False)
     address: Mapped[str] = mapped_column(String(120), nullable=False)
     phone: Mapped[str] = mapped_column(String(20), nullable=True)
+    note: Mapped[str] = mapped_column(String(500))
     create_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now())
 
@@ -148,6 +133,9 @@ class Services(db.Model):
     price: Mapped[float] = mapped_column(Float)
     duration: Mapped[int] = mapped_column(Integer)
     image: Mapped[str] = mapped_column(String())
+    materials_needed: Mapped[str] = mapped_column(String())
+    estimate_hours: Mapped[float] = mapped_column(float, nullable=True)
+    base_cost: Mapped[Numeric] = mapped_column(Numeric(10, 2), nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean(), nullable=False)
 
     providerServices: Mapped['Provider'] = relationship(
@@ -160,14 +148,14 @@ class Services(db.Model):
         back_populates='services_styl')
 
 
-class StylistServices(db.Model):
-    __table_args__ = (UniqueConstraint("stylist_id", "services_id"),)
-    __tablename__ = 'stylistServices'
+class ServiceMaterial(db.Model):
+    __tablename__ = 'servicesmaterial'
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    stylist_id: Mapped[int] = mapped_column(
-        ForeignKey('stylist.id'), nullable=False)
-    services_id: Mapped[int] = mapped_column(
-        ForeignKey('services.id'), nullable=False)
+    service_id: Mapped[int] = mapped_column(
+        ForeignKey('service.id'), nullable=False)
+    name: Mapped[str] = mapped_column(String(120))
+    quantity: Mapped[Numeric] = mapped_column(Numeric())
+    unit_cost: Mapped[float] = mapped_column(Float)
 
     stylistServices: Mapped['Stylist'] = relationship(
         back_populates='services_stylist')
@@ -175,59 +163,24 @@ class StylistServices(db.Model):
         back_populates='stylist_unique')
 
 
-class Availability(db.Model):
-    __tablename__ = 'availability'
-    __table_args__ = (UniqueConstraint(
-        "stylist_id", "day_of_week", "start_time", name="unique_stylist_schedule"),)
+class Job(db.Model):
+    __tablename__ = 'job'
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    stylist_id: Mapped[int] = mapped_column(
-        ForeignKey('stylist.id'), nullable=False)
-    day_of_week: Mapped[int] = mapped_column(Integer, nullable=False)
-    start_time: Mapped[time] = mapped_column(
-        db.Time(timezone=True), nullable=True)
-    end_time: Mapped[time] = mapped_column(
-        db.Time(timezone=True), nullable=False)
-
-    stylistAvailability: Mapped['Stylist'] = relationship(
-        back_populates='availability')
-
-
-class Appointments(db.Model):
-    __tablename__ = 'appointments'
-    __table_args__ = (UniqueConstraint(
-        "stylist_id", "apointment_date", name="unique_stylist_booking"),)
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    stylist_id: Mapped[int] = mapped_column(
-        ForeignKey('stylist.id'), nullable=False)
-    provider_id: Mapped[int] = mapped_column(
-        ForeignKey('provider.id'), nullable=False)
-    client_id: Mapped[int] = mapped_column(
-        ForeignKey('client.id'), nullable=False)
-    services_id: Mapped[int] = mapped_column(
-        ForeignKey('services.id'), nullable=False)
-    apointment_date: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False)
-    status: Mapped[AppointmentStatus] = mapped_column(
-        Enum(AppointmentStatus), nullable=False)
-    price: Mapped[float] = mapped_column(Float)
-    note: Mapped[str] = mapped_column(String(500))
+    contractor_id: Mapped[int] = mapped_column(
+        ForeignKey('contractor.id'), nullable=False)
+    customer_id: Mapped[int] = mapped_column(
+        ForeignKey('customer.id'), nullable=False)
+    service_id: Mapped[int] = mapped_column(
+        ForeignKey('service.id'), nullable=False)
+    title: Mapped[str] = mapped_column(String(120), nullable=False)
+    description: Mapped[str] = mapped_column(String())
+    status: Mapped[JobStatus] = mapped_column(Enum(JobStatus), nullable=False)
+    schedule_date: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now())
+    estimate_total: Mapped[float] = mapped_column(Float)
+    actual_total: Mapped[float] = mapped_column(Float)
     create_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now())
-
-    provider_appointment: Mapped['Provider'] = relationship(
-        back_populates='app_provider')
-    stylistAppointment: Mapped['Stylist'] = relationship(
-        back_populates='appointment')
-    clientAppointment: Mapped['Client'] = relationship(
-        back_populates='appointment_by')
-    servicesAppointment: Mapped['Services'] = relationship(
-        back_populates='appointmentServices')
-    messageAppointment: Mapped[list['Messages']] = relationship(
-        back_populates='appoinmentMessage')
-    reviewaApointment: Mapped[list['Review']] = relationship(
-        back_populates='appointmentReview')
-    payment_app: Mapped[list['Payment']] = relationship(
-        back_populates='appointments_payment')
 
 
 class Payment(db.Model):
