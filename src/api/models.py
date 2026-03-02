@@ -21,9 +21,11 @@ class JobStatus(enum.Enum):
 
 
 class PaymentMethod(enum.Enum):
-    card = "card"
-    pix = "pix"
+    stripe = "stripe"
+    square = "square"
+    zelle = "zelle"
     cash = "cash"
+    check = "check"
 
 
 class PaymentStatus(enum.Enum):
@@ -33,9 +35,11 @@ class PaymentStatus(enum.Enum):
     failed = "failed"
 
 
-class FavoriteType(enum.Enum):
-    provider = "provider"
-    service = "service"
+class InvoiceStatus(enum.Enum):
+    draft = "draft"
+    sent = "sent"
+    paid = "paid"
+    overdue = "overdue"
 
 
 class User(db.Model):
@@ -83,21 +87,18 @@ class Contractor(db.Model):
     create_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now())
 
-    stylist: Mapped[list['Stylist']] = relationship(
-        back_populates='provider_styl')
+    contractor_invoice: Mapped[list['Invoice']] = relationship(
+        back_populates='invoice_contractor')
     services: Mapped[list['Services']] = relationship(
         back_populates='providerServices', cascade='all, delete-orphan')
     user: Mapped['User'] = relationship(back_populates='provider')
-    payment_by: Mapped[list['Payment']] = relationship(
-        back_populates='provider_payment')
+    contractor_job: Mapped[list['Job']] = relationship(
+        back_populates='job_contractor')
+    service_contr: Mapped[list['Services']] = relationship(
+        back_populates='contractorServices')
+
     project_provider: Mapped[list['PortfolioProject']
                              ] = relationship(back_populates='provider_project')
-    messageProvider: Mapped[list['Messages']] = relationship(
-        back_populates='providerMessage')
-    app_provider: Mapped[list['Appointments']] = relationship(
-        back_populates='provider_appointment')
-    favorite_by: Mapped[list['Favorite']] = relationship(
-        back_populates='provider_favorite')
 
 
 class Customer(db.Model):
@@ -113,10 +114,10 @@ class Customer(db.Model):
         DateTime(timezone=True), server_default=func.now())
 
     userClient: Mapped['User'] = relationship(back_populates='client')
-    appointment_by: Mapped[list['Appointments']] = relationship(
-        back_populates='clientAppointment')
-    clientMessage: Mapped[list['Messages']] = relationship(
-        back_populates='clientMessage')
+    customer_invoice: Mapped[list['Invoice']] = relationship(
+        back_populates='invoice_customer')
+    customer_job: Mapped[list['Job']] = relationship(
+        back_populates='job_customer')
     reviewClient: Mapped[list['Review']] = relationship(
         back_populates='clientReview')
     favorite_client: Mapped[list['Favorite']] = relationship(
@@ -138,18 +139,16 @@ class Services(db.Model):
     base_cost: Mapped[Numeric] = mapped_column(Numeric(10, 2), nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean(), nullable=False)
 
-    providerServices: Mapped['Provider'] = relationship(
-        back_populates='services')
-    appointmentServices: Mapped[list['Appointments']] = relationship(
-        back_populates='servicesAppointment')
-    favorite_serv: Mapped[list['Favorite']] = relationship(
-        back_populates='service_fav')
-    stylist_unique: Mapped[list['StylistServices']] = relationship(
-        back_populates='services_styl')
+    contractorServices: Mapped['Contractor'] = relationship(
+        back_populates='')
+    job: Mapped['Job'] = relationship(
+        back_populates='service')
+    material_service: Mapped[list['ServiceMaterial']] = relationship(
+        back_populates='service_mat')
 
 
 class ServiceMaterial(db.Model):
-    __tablename__ = 'servicesmaterial'
+    __tablename__ = 'servicesMaterial'
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     service_id: Mapped[int] = mapped_column(
         ForeignKey('service.id'), nullable=False)
@@ -157,10 +156,8 @@ class ServiceMaterial(db.Model):
     quantity: Mapped[Numeric] = mapped_column(Numeric())
     unit_cost: Mapped[float] = mapped_column(Float)
 
-    stylistServices: Mapped['Stylist'] = relationship(
-        back_populates='services_stylist')
-    services_styl: Mapped['Services'] = relationship(
-        back_populates='stylist_unique')
+    service_mat: Mapped['Services'] = relationship(
+        back_populates='')
 
 
 class Job(db.Model):
@@ -182,77 +179,81 @@ class Job(db.Model):
     create_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now())
 
+    job_invoice: Mapped[list['Invoice']] = relationship(
+        back_populates='invoice_job')
+    job_contractor: Mapped['Contractor'] = relationship(
+        back_populates='contractor_job')
+    job_customer: Mapped['Customer'] = relationship(
+        back_populates='customer_job')
+    service: Mapped['Services'] = relationship(
+        back_populates='job')
+
+
+class Invoice(db.Model):
+    __tablename__ = 'invoice'
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    contractor_id: Mapped[int] = mapped_column(
+        ForeignKey('contractor.id'), nullable=False)
+    customer_id: Mapped[int] = mapped_column(
+        ForeignKey('customer.id'), nullable=False)
+    job_id: Mapped[int] = mapped_column(
+        ForeignKey('job.id'), nullable=False)
+    invoice_number: Mapped[int] = mapped_column(Integer, nullable=False)
+    issue_date: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now())
+    due_date: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now())
+    subtotal: Mapped[Decimal] = mapped_column(Decimal)
+    tax:  Mapped[Decimal] = mapped_column(Decimal)
+    total_amout:  Mapped[Decimal] = mapped_column(Decimal)
+    status: Mapped[InvoiceStatus] = mapped_column(
+        Enum(InvoiceStatus), nullable=False)
+    payment_link: Mapped[PaymentMethod] = mapped_column(
+        Enum(PaymentMethod), nullable=False)
+    notes: Mapped[str] = mapped_column(String(500), nullable=False)
+    create_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now())
+
+    payment: Mapped['Payment'] = relationship(backpopulates='invoice_payment')
+    invoice_contractor: Mapped['Contractor'] = relationship(
+        back_populates='contractor_invoice')
+    invoice_customer: Mapped['Customer'] = relationship(
+        back_populates='customer_invoice')
+    invoice_job: Mapped['Job'] = relationship(
+        back_populates='job_invoice')
+
+
+class InvoiceItem(db.Model):
+    __tablename__ = 'invoiceItem'
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    invoice_id: Mapped[int] = mapped_column(
+        ForeignKey('invoice.id'), nullable=False)
+    description: Mapped[str] = mapped_column(String())
+    quantity: Mapped[int] = mapped_column(Integer)
+    unit_price: Mapped[float] = mapped_column(float)
+    amount: Mapped[Decimal] = mapped_column(Decimal)
+    create_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now())
+
 
 class Payment(db.Model):
     __tablename__ = 'payment'
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    appointments_id: Mapped[int] = mapped_column(
-        ForeignKey('appointments.id'), nullable=False)
-    provider_id: Mapped[int] = mapped_column(
-        ForeignKey('provider.id'), nullable=False)
+    invoice_id: Mapped[int] = mapped_column(
+        ForeignKey('invoice.id'), nullable=False)
     amount: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
     payment_method: Mapped[PaymentMethod] = mapped_column(
         Enum(PaymentMethod), nullable=False)
-    curency: Mapped[str] = mapped_column(String(), nullable=False)
     payment_status: Mapped[PaymentStatus] = mapped_column(
         Enum(PaymentStatus), nullable=False)
     transaction_id: Mapped[str] = mapped_column(String(255))
     paid_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now())
-    failure_reason: Mapped[str] = mapped_column(String(250), nullable=True)
-    pix_qr_code: Mapped[str] = mapped_column(String(), nullable=True)
     create_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now())
 
-    appointments_payment: Mapped['Appointments'] = relationship(
-        back_populates='payment_app')
-    provider_payment: Mapped['Provider'] = relationship(
-        back_populates='payment_by')
-
-
-class Messages(db.Model):
-    __tablename__ = 'messages'
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    provider_id: Mapped[int] = mapped_column(
-        ForeignKey('provider.id'), nullable=False)
-    client_id: Mapped[int] = mapped_column(
-        ForeignKey('client.id'), nullable=False)
-    appointment_id: Mapped[int] = mapped_column(
-        ForeignKey('appointments.id'), nullable=False)
-    content: Mapped[str] = mapped_column(String(500), nullable=False)
-    is_read: Mapped[bool] = mapped_column(Boolean)
-    create_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now())
-
-    providerMessage: Mapped['Provider'] = relationship(
-        back_populates='messageProvider')
-    clientMessage: Mapped['Client'] = relationship(
-        back_populates='clientMessage')
-    appoinmentMessage: Mapped['Appointments'] = relationship(
-        back_populates='messageAppointment')
-
-
-class Review(db.Model):
-    __tablename__ = 'review'
-    __table_args__ = (UniqueConstraint('appointment_id',
-                      name='only_review_per_appointment'),)
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    stylist_id: Mapped[int] = mapped_column(
-        ForeignKey('stylist.id'), nullable=False)
-    client_id: Mapped[int] = mapped_column(
-        ForeignKey('client.id'), nullable=False)
-    appointment_id: Mapped[int] = mapped_column(
-        ForeignKey('appointments.id'), nullable=False)
-    rating: Mapped[int] = mapped_column(Integer)
-    comment: Mapped[str] = mapped_column(String(500))
-    create_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now())
-
-    stylistReview: Mapped['Stylist'] = relationship(back_populates='review_by')
-    clientReview: Mapped['Client'] = relationship(
-        back_populates='reviewClient')
-    appointmentReview: Mapped['Appointments'] = relationship(
-        back_populates='reviewaApointment')
+    invoice_payment: Mapped['Invoice'] = relationship(
+        back_populates='payment')
 
 
 class PortfolioProject(db.Model):
@@ -280,50 +281,3 @@ class PortfolioImage(db.Model):
     order_index: Mapped[int] = mapped_column(Integer)
 
     project: Mapped['PortfolioProject'] = relationship(back_populates='image')
-
-
-class Specialties(db.Model):
-    __tablename__ = 'specialities'
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    name: Mapped[str] = mapped_column(String(120))
-    slug: Mapped[str] = mapped_column(String(250))
-    category: Mapped[str] = mapped_column(String(120))
-
-    stylistSpecialty: Mapped[list['StylistSpecialty']
-                             ] = relationship(back_populates='specialty')
-
-
-class StylistSpecialty(db.Model):
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    stylist_id: Mapped[int] = mapped_column(
-        ForeignKey('stylist.id'), nullable=False)
-    specialties_id: Mapped[int] = mapped_column(
-        ForeignKey('specialities.id'), nullable=False)
-
-    specialty: Mapped['Specialties'] = relationship(
-        back_populates='stylistSpecialty')
-    stylist_specialty: Mapped['Stylist'] = relationship(
-        back_populates='specialties')
-
-
-class Favorite(db.Model):
-    __table_args__ = (UniqueConstraint(
-        "client_id", "provider_id", "service_id", name="unique_favorite"),)
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    provider_id: Mapped[int] = mapped_column(
-        ForeignKey('provider.id'), nullable=True)
-    client_id: Mapped[int] = mapped_column(
-        ForeignKey('client.id'), nullable=False)
-    service_id: Mapped[int] = mapped_column(
-        ForeignKey('services.id'), nullable=True)
-    type: Mapped[FavoriteType] = mapped_column(
-        Enum(FavoriteType), nullable=False)
-    create_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now())
-
-    provider_favorite: Mapped['Provider'] = relationship(
-        back_populates='favorite_by')
-    service_fav: Mapped['Services'] = relationship(
-        back_populates='favorite_serv')
-    client_fav: Mapped['Client'] = relationship(
-        back_populates='favorite_client')
