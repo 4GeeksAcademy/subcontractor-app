@@ -50,13 +50,19 @@ class SubscriptionStatus(enum.Enum):
     canceled = "canceled"
 
 
+class EstimateStatus(enum.Enum):
+    new = "new"
+    converted = "converted"
+    rejected = "rejected"
+
+
 class User(db.Model):
     __tablename__ = 'user'
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String(120))
     email: Mapped[str] = mapped_column(
         String(120), unique=True, nullable=False)
-    password: Mapped[str] = mapped_column(nullable=False)
+    password: Mapped[str] = mapped_column(String(255), nullable=False)
     role: Mapped[UserRole] = mapped_column(Enum(UserRole))
     create_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now())
@@ -117,7 +123,7 @@ class Contractor(db.Model):
         back_populates='contractor_estimate')
 
     __table_args__ = (db.Index('idx_contractor_verified',
-                               'is_verified', 'subscription_status','plan_type'),)
+                               'is_verified', 'subscription_status', 'plan_type'),)
 
 
 class Customer(db.Model):
@@ -127,8 +133,11 @@ class Customer(db.Model):
         ForeignKey('contractor.id'), nullable=False)
     name: Mapped[str] = mapped_column(String(120))
     email: Mapped[str] = mapped_column(
-        String(120), unique=True, nullable=False)
+        String(120), nullable=False)
     address: Mapped[str] = mapped_column(String(120), nullable=False)
+    city: Mapped[str] = mapped_column(String(120), nullable=False)
+    state: Mapped[str] = mapped_column(String(120), nullable=False)
+    zip_code: Mapped[str] = mapped_column(String(20), nullable=False)
     phone: Mapped[str] = mapped_column(String(20), nullable=True)
     note: Mapped[str] = mapped_column(String(500))
     create_at: Mapped[datetime] = mapped_column(
@@ -138,9 +147,11 @@ class Customer(db.Model):
         back_populates='invoice_customer')
     customer_job: Mapped[list['Job']] = relationship(
         back_populates='job_customer')
+    customer_request: Mapped[list['EstimateRequest']] = relationship(
+        back_populates='estim_customer')
 
-    __table_args__ = (db.Index('idx_customer_contractor',
-                      'contractor_id', 'email'),)
+    __table_args__ = (db.Index('idx_customer_contractor', 'contractor_id', 'email'),
+                      db.UniqueConstraint('contractor_id', 'email'))
 
 
 class Services(db.Model):
@@ -152,20 +163,22 @@ class Services(db.Model):
         ForeignKey('contractor.id'), nullable=False)
     description: Mapped[str] = mapped_column(String(500), nullable=False)
     name: Mapped[str] = mapped_column(String(120), nullable=False)
-    price: Mapped[float] = mapped_column(Float)
+    price: Mapped[Numeric] = mapped_column(Numeric(10, 2))
     duration: Mapped[int] = mapped_column(Integer)
     image: Mapped[str] = mapped_column(String())
     materials_needed: Mapped[str] = mapped_column(String())
     estimate_hours: Mapped[float] = mapped_column(Float, nullable=True)
     base_cost: Mapped[Numeric] = mapped_column(Numeric(10, 2), nullable=True)
-    is_active: Mapped[bool] = mapped_column(Boolean(), nullable=False)
+    is_deleted: Mapped[bool] = mapped_column(Boolean(), default=False)
+    is_active: Mapped[bool] = mapped_column(
+        Boolean(), nullable=False, default=True)
 
     contractorServices: Mapped['Contractor'] = relationship(
         back_populates='service_contr')
     job: Mapped['Job'] = relationship(
         back_populates='service')
     material_service: Mapped[list['ServiceMaterial']] = relationship(
-        back_populates='service_mat')
+        back_populates='service_mat', cascade='all, delete-orphan')
 
 
 class ServiceMaterial(db.Model):
@@ -175,7 +188,7 @@ class ServiceMaterial(db.Model):
         ForeignKey('services.id'), nullable=False)
     name: Mapped[str] = mapped_column(String(120))
     quantity: Mapped[Numeric] = mapped_column(Numeric(10, 2))
-    unit_cost: Mapped[float] = mapped_column(Float)
+    unit_cost: Mapped[Numeric] = mapped_column(Numeric(10, 2))
 
     service_mat: Mapped['Services'] = relationship(
         back_populates='material_service')
@@ -195,17 +208,20 @@ class Job(db.Model):
     status: Mapped[JobStatus] = mapped_column(Enum(JobStatus), nullable=False)
     schedule_date: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now())
-    estimate_total: Mapped[float] = mapped_column(Float)
-    actual_total: Mapped[float] = mapped_column(Float)
-    start_date:  Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), nullable=True)
-    end_date:  Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), nullable=True)
+    estimate_total: Mapped[Numeric] = mapped_column(Numeric(10, 2))
+    actual_total: Mapped[Numeric] = mapped_column(Numeric(10, 2))
+    start_date: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=True)  # Sin server_default
+    end_date: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=True)
+    is_deleted: Mapped[Boolean] = mapped_column(Boolean())
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), onupdate=func.now())
     create_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now())
 
     job_invoice: Mapped[list['Invoice']] = relationship(
-        back_populates='invoice_job')
+        back_populates='invoice_job', cascade='all, delete-orphan')
     job_contractor: Mapped['Contractor'] = relationship(
         back_populates='contractor_job')
     job_customer: Mapped['Customer'] = relationship(
@@ -219,49 +235,59 @@ class Job(db.Model):
 
 class Invoice(db.Model):
     __tablename__ = 'invoice'
-    __table_args__ = (
-        db.CheckConstraint('total_amount = subtotal + tax', name='check_invoice_total'),)
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
     contractor_id: Mapped[int] = mapped_column(
         ForeignKey('contractor.id'), nullable=False)
     customer_id: Mapped[int] = mapped_column(
         ForeignKey('customer.id'), nullable=False)
     job_id: Mapped[int] = mapped_column(
         ForeignKey('job.id'), nullable=False)
-    invoice_number: Mapped[int] = mapped_column(Integer, nullable=False)
+    invoice_number: Mapped[int] = mapped_column(Integer, nullable=False,)
     issue_date: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now())
+        DateTime(timezone=True), server_default=func.now(), nullable=False)
     due_date: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now())
-    subtotal: Mapped[Numeric] = mapped_column(Numeric(10, 2))
-    tax:  Mapped[Numeric] = mapped_column(Numeric(10, 2))
-    total_amount:  Mapped[Numeric] = mapped_column(Numeric(10, 2))
+    subtotal: Mapped[Numeric] = mapped_column(Numeric(10, 2), nullable=False)
+    tax:  Mapped[Numeric] = mapped_column(Numeric(10, 2), nullable=True)
+    total_amount:  Mapped[Numeric] = mapped_column(
+        Numeric(10, 2), nullable=False)
     status: Mapped[InvoiceStatus] = mapped_column(
         Enum(InvoiceStatus), nullable=False)
     payment_link: Mapped[str] = mapped_column(String(500), nullable=False)
     notes: Mapped[str] = mapped_column(String(500), nullable=False)
-    paid_at:  Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now())
-    sent_at:  Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now())
+    paid_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=True)
+    sent_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=True)
     stripe_payment_intent_id: Mapped[str] = mapped_column(
         String(255), nullable=True)
     stripe_payment_link_id: Mapped[str] = mapped_column(
         String(255), nullable=True)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), onupdate=func.now())
     create_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now())
 
-    payment: Mapped['Payment'] = relationship(back_populates='invoice_payment')
+    payment: Mapped[list['Payment']] = relationship(
+        back_populates='invoice_payment')
     invoice_contractor: Mapped['Contractor'] = relationship(
         back_populates='contractor_invoice')
     invoice_customer: Mapped['Customer'] = relationship(
         back_populates='customer_invoice')
     invoice_job: Mapped['Job'] = relationship(
         back_populates='job_invoice')
+    invoice_items: Mapped[list['InvoiceItem']
+                          ] = relationship(back_populates='invoice', cascade='all, delete-orphan')
 
-    __table_args__ = (db.Index('idx_invoice_contractor_status', 'contractor_id', 'status'),
-                      db.Index('idx_invoice_dates', 'issue_date', 'due_date'),
-                      db.Index('idx_invoice_overdue', 'status', 'due_date'), )
+    __table_args__ = (
+        db.CheckConstraint('total_amount = subtotal + tax',
+                           name='check_invoice_total'),
+        db.Index('idx_invoice_contractor_status', 'contractor_id', 'status'),
+        db.Index('idx_invoice_dates', 'issue_date', 'due_date'),
+        db.UniqueConstraint('contractor_id', 'invoice_number', name='uq_invoice_per_contractor'),)
+
+    def __repr__(self):
+        return f'<Invoice {self.invoice_number}>'
 
 
 class InvoiceItem(db.Model):
@@ -269,18 +295,20 @@ class InvoiceItem(db.Model):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     invoice_id: Mapped[int] = mapped_column(
         ForeignKey('invoice.id'), nullable=False)
-    description: Mapped[str] = mapped_column(String())
-    quantity: Mapped[int] = mapped_column(Integer)
-    unit_price: Mapped[Numeric] = mapped_column(Numeric(10, 2))
-    amount: Mapped[Numeric] = mapped_column(Numeric(10, 2))
+    description: Mapped[str] = mapped_column(String(550), nullable=False)
+    quantity: Mapped[int] = mapped_column(Integer, nullable=False)
+    unit_price: Mapped[Numeric] = mapped_column(Numeric(10, 2), nullable=False)
+    amount: Mapped[Numeric] = mapped_column(Numeric(10, 2), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), onupdate=func.now())
     create_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now())
+
+    invoice: Mapped['Invoice'] = relationship(back_populates='invoice_items')
 
 
 class Payment(db.Model):
     __tablename__ = 'payment'
-    __table_args__ = (
-        db.CheckConstraint('amount > 0', name='check_payment_amount'),)
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     invoice_id: Mapped[int] = mapped_column(
         ForeignKey('invoice.id'), nullable=False)
@@ -292,14 +320,18 @@ class Payment(db.Model):
     transaction_id: Mapped[str] = mapped_column(String(255))
     paid_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), onupdate=func.now())
     create_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now())
 
     invoice_payment: Mapped['Invoice'] = relationship(
         back_populates='payment')
 
-    __table_args__ = (db.Index('idx_payment_invoice', 'invoice_id'),
-                      db.Index('idx_payment_status', 'payment_status'),)
+    __table_args__ = (
+        db.CheckConstraint('amount > 0', name='check_payment_amount'),
+        db.Index('idx_payment_invoice', 'invoice_id'),
+        db.Index('idx_payment_status', 'payment_status'),)
 
 
 class PortfolioProject(db.Model):
@@ -332,16 +364,28 @@ class PortfolioImage(db.Model):
 class EstimateRequest(db.Model):
     __tablename__ = 'estimateRequest'
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    customer_id: Mapped[int] = mapped_column(
+        ForeignKey('customer.id'), nullable=True)
     contractor_id: Mapped[int] = mapped_column(
         ForeignKey('contractor.id'), nullable=False)
-    customer_name: Mapped[str] = mapped_column(String(120))
-    customer_email: Mapped[str] = mapped_column(String(120))
-    customer_phone: Mapped[str] = mapped_column(String(20))
+    customer_name: Mapped[str] = mapped_column(String(120), nullable=False)
+    customer_email: Mapped[str] = mapped_column(String(120), nullable=False)
+    customer_phone: Mapped[str] = mapped_column(String(20), nullable=False)
     service_id: Mapped[int] = mapped_column(
         ForeignKey('services.id'), nullable=False)
     description: Mapped[str] = mapped_column(String(500))
+    status: Mapped[EstimateStatus] = mapped_column(
+        Enum(EstimateStatus), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), onupdate=func.now())
     create_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now())
 
     contractor_estimate: Mapped['Contractor'] = relationship(
         back_populates='estimate_contractor')
+    estim_customer: Mapped['Customer'] = relationship(
+        back_populates='customer_request')
+
+    __table_args__ = (
+        db.Index('idx_estimate_email', 'customer_email'),
+        db.Index('idx_estimate_contractor_status', 'contractor_id', 'status'),)
