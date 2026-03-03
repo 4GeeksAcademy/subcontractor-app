@@ -1,8 +1,8 @@
-"""Initial migration
+"""empty message
 
-Revision ID: 82c0db4946dd
+Revision ID: bd86821a5b59
 Revises: 
-Create Date: 2026-03-03 03:11:02.397091
+Create Date: 2026-03-03 19:51:21.540380
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '82c0db4946dd'
+revision = 'bd86821a5b59'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -22,7 +22,7 @@ def upgrade():
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(length=120), nullable=False),
     sa.Column('email', sa.String(length=120), nullable=False),
-    sa.Column('password', sa.String(), nullable=False),
+    sa.Column('password', sa.String(length=255), nullable=False),
     sa.Column('role', sa.Enum('CONTRACTOR', 'CUSTOMER', name='userrole'), nullable=False),
     sa.Column('create_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.Column('is_active', sa.Boolean(), nullable=False),
@@ -68,12 +68,15 @@ def upgrade():
     sa.Column('name', sa.String(length=120), nullable=False),
     sa.Column('email', sa.String(length=120), nullable=False),
     sa.Column('address', sa.String(length=120), nullable=False),
+    sa.Column('city', sa.String(length=120), nullable=False),
+    sa.Column('state', sa.String(length=120), nullable=False),
+    sa.Column('zip_code', sa.String(length=20), nullable=False),
     sa.Column('phone', sa.String(length=20), nullable=True),
     sa.Column('note', sa.String(length=500), nullable=False),
     sa.Column('create_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.ForeignKeyConstraint(['contractor_id'], ['contractor.id'], ),
     sa.PrimaryKeyConstraint('id'),
-    sa.UniqueConstraint('email')
+    sa.UniqueConstraint('contractor_id', 'email')
     )
     with op.batch_alter_table('customer', schema=None) as batch_op:
         batch_op.create_index('idx_customer_contractor', ['contractor_id', 'email'], unique=False)
@@ -91,12 +94,13 @@ def upgrade():
     sa.Column('contractor_id', sa.Integer(), nullable=False),
     sa.Column('description', sa.String(length=500), nullable=False),
     sa.Column('name', sa.String(length=120), nullable=False),
-    sa.Column('price', sa.Float(), nullable=False),
+    sa.Column('price', sa.Numeric(precision=10, scale=2), nullable=False),
     sa.Column('duration', sa.Integer(), nullable=False),
     sa.Column('image', sa.String(), nullable=False),
     sa.Column('materials_needed', sa.String(), nullable=False),
     sa.Column('estimate_hours', sa.Float(), nullable=True),
     sa.Column('base_cost', sa.Numeric(precision=10, scale=2), nullable=True),
+    sa.Column('is_deleted', sa.Boolean(), nullable=False),
     sa.Column('is_active', sa.Boolean(), nullable=False),
     sa.ForeignKeyConstraint(['contractor_id'], ['contractor.id'], ),
     sa.PrimaryKeyConstraint('id'),
@@ -104,17 +108,25 @@ def upgrade():
     )
     op.create_table('estimateRequest',
     sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('customer_id', sa.Integer(), nullable=True),
     sa.Column('contractor_id', sa.Integer(), nullable=False),
     sa.Column('customer_name', sa.String(length=120), nullable=False),
     sa.Column('customer_email', sa.String(length=120), nullable=False),
     sa.Column('customer_phone', sa.String(length=20), nullable=False),
     sa.Column('service_id', sa.Integer(), nullable=False),
     sa.Column('description', sa.String(length=500), nullable=False),
+    sa.Column('status', sa.Enum('new', 'converted', 'rejected', name='estimatestatus'), nullable=False),
+    sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
     sa.Column('create_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.ForeignKeyConstraint(['contractor_id'], ['contractor.id'], ),
+    sa.ForeignKeyConstraint(['customer_id'], ['customer.id'], ),
     sa.ForeignKeyConstraint(['service_id'], ['services.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
+    with op.batch_alter_table('estimateRequest', schema=None) as batch_op:
+        batch_op.create_index('idx_estimate_contractor_status', ['contractor_id', 'status'], unique=False)
+        batch_op.create_index('idx_estimate_email', ['customer_email'], unique=False)
+
     op.create_table('job',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('contractor_id', sa.Integer(), nullable=False),
@@ -124,10 +136,12 @@ def upgrade():
     sa.Column('description', sa.String(), nullable=False),
     sa.Column('status', sa.Enum('pending', 'in_progress', 'completed', 'canceled', name='jobstatus'), nullable=False),
     sa.Column('schedule_date', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
-    sa.Column('estimate_total', sa.Float(), nullable=False),
-    sa.Column('actual_total', sa.Float(), nullable=False),
-    sa.Column('start_date', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
-    sa.Column('end_date', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
+    sa.Column('estimate_total', sa.Numeric(precision=10, scale=2), nullable=False),
+    sa.Column('actual_total', sa.Numeric(precision=10, scale=2), nullable=False),
+    sa.Column('start_date', sa.DateTime(timezone=True), nullable=True),
+    sa.Column('end_date', sa.DateTime(timezone=True), nullable=True),
+    sa.Column('is_deleted', sa.Boolean(), nullable=False),
+    sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
     sa.Column('create_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.ForeignKeyConstraint(['contractor_id'], ['contractor.id'], ),
     sa.ForeignKeyConstraint(['customer_id'], ['customer.id'], ),
@@ -152,7 +166,7 @@ def upgrade():
     sa.Column('service_id', sa.Integer(), nullable=False),
     sa.Column('name', sa.String(length=120), nullable=False),
     sa.Column('quantity', sa.Numeric(precision=10, scale=2), nullable=False),
-    sa.Column('unit_cost', sa.Float(), nullable=False),
+    sa.Column('unit_cost', sa.Numeric(precision=10, scale=2), nullable=False),
     sa.ForeignKeyConstraint(['service_id'], ['services.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
@@ -165,33 +179,36 @@ def upgrade():
     sa.Column('issue_date', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.Column('due_date', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.Column('subtotal', sa.Numeric(precision=10, scale=2), nullable=False),
-    sa.Column('tax', sa.Numeric(precision=10, scale=2), nullable=False),
+    sa.Column('tax', sa.Numeric(precision=10, scale=2), nullable=True),
     sa.Column('total_amount', sa.Numeric(precision=10, scale=2), nullable=False),
     sa.Column('status', sa.Enum('draft', 'sent', 'paid', 'overdue', name='invoicestatus'), nullable=False),
     sa.Column('payment_link', sa.String(length=500), nullable=False),
     sa.Column('notes', sa.String(length=500), nullable=False),
-    sa.Column('paid_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
-    sa.Column('sent_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
+    sa.Column('paid_at', sa.DateTime(timezone=True), nullable=True),
+    sa.Column('sent_at', sa.DateTime(timezone=True), nullable=True),
     sa.Column('stripe_payment_intent_id', sa.String(length=255), nullable=True),
     sa.Column('stripe_payment_link_id', sa.String(length=255), nullable=True),
+    sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
     sa.Column('create_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
+    sa.CheckConstraint('total_amount = subtotal + tax', name='check_invoice_total'),
     sa.ForeignKeyConstraint(['contractor_id'], ['contractor.id'], ),
     sa.ForeignKeyConstraint(['customer_id'], ['customer.id'], ),
     sa.ForeignKeyConstraint(['job_id'], ['job.id'], ),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('contractor_id', 'invoice_number', name='uq_invoice_per_contractor')
     )
     with op.batch_alter_table('invoice', schema=None) as batch_op:
         batch_op.create_index('idx_invoice_contractor_status', ['contractor_id', 'status'], unique=False)
         batch_op.create_index('idx_invoice_dates', ['issue_date', 'due_date'], unique=False)
-        batch_op.create_index('idx_invoice_overdue', ['status', 'due_date'], unique=False)
 
     op.create_table('invoiceItem',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('invoice_id', sa.Integer(), nullable=False),
-    sa.Column('description', sa.String(), nullable=False),
+    sa.Column('description', sa.String(length=550), nullable=False),
     sa.Column('quantity', sa.Integer(), nullable=False),
     sa.Column('unit_price', sa.Numeric(precision=10, scale=2), nullable=False),
     sa.Column('amount', sa.Numeric(precision=10, scale=2), nullable=False),
+    sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
     sa.Column('create_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.ForeignKeyConstraint(['invoice_id'], ['invoice.id'], ),
     sa.PrimaryKeyConstraint('id')
@@ -204,7 +221,9 @@ def upgrade():
     sa.Column('payment_status', sa.Enum('pending', 'paid', 'refunded', 'failed', name='paymentstatus'), nullable=False),
     sa.Column('transaction_id', sa.String(length=255), nullable=False),
     sa.Column('paid_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
+    sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
     sa.Column('create_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
+    sa.CheckConstraint('amount > 0', name='check_payment_amount'),
     sa.ForeignKeyConstraint(['invoice_id'], ['invoice.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
@@ -224,7 +243,6 @@ def downgrade():
     op.drop_table('payment')
     op.drop_table('invoiceItem')
     with op.batch_alter_table('invoice', schema=None) as batch_op:
-        batch_op.drop_index('idx_invoice_overdue')
         batch_op.drop_index('idx_invoice_dates')
         batch_op.drop_index('idx_invoice_contractor_status')
 
@@ -236,6 +254,10 @@ def downgrade():
         batch_op.drop_index('idx_job_contractor_dates')
 
     op.drop_table('job')
+    with op.batch_alter_table('estimateRequest', schema=None) as batch_op:
+        batch_op.drop_index('idx_estimate_email')
+        batch_op.drop_index('idx_estimate_contractor_status')
+
     op.drop_table('estimateRequest')
     op.drop_table('services')
     op.drop_table('portfolioproject')

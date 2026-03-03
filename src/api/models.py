@@ -84,12 +84,12 @@ class Contractor(db.Model):
     user_id: Mapped[int] = mapped_column(ForeignKey('user.id'), nullable=False)
     business_name: Mapped[str] = mapped_column(String(120))
     description: Mapped[str] = mapped_column(String(500), nullable=False)
-    address: Mapped[str] = mapped_column(String(120), nullable=False)
-    latitude: Mapped[float] = mapped_column(Float, nullable=False)
-    longitude: Mapped[float] = mapped_column(Float, nullable=False)
+    address: Mapped[str] = mapped_column(String(120), nullable=True)
+    latitude: Mapped[float] = mapped_column(Float, nullable=True)
+    longitude: Mapped[float] = mapped_column(Float, nullable=True)
     phone: Mapped[str] = mapped_column(String(20), nullable=False)
-    logo_image: Mapped[str] = mapped_column(String(), nullable=False)
-    cover_image: Mapped[str] = mapped_column(String(500), nullable=False)
+    logo_image: Mapped[str] = mapped_column(String())
+    cover_image: Mapped[str] = mapped_column(String(500))
     is_verified: Mapped[bool] = mapped_column(Boolean, default=False)
     business_email: Mapped[str] = mapped_column(String())
     website_slug: Mapped[str] = mapped_column(
@@ -101,7 +101,7 @@ class Contractor(db.Model):
     plan_type: Mapped[str] = mapped_column(String(50), nullable=True)
     subscription_renewal_date: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=True)
-    tax_rate: Mapped[Numeric] = mapped_column(Numeric(10, 2))
+    tax_rate: Mapped[Numeric] = mapped_column(Numeric(10, 2), nullable=True)
     currency: Mapped[str] = mapped_column(String(10), default='USD')
     invoice_prefix: Mapped[str] = mapped_column(String(10), default='INV')
     stripe_account_id: Mapped[str] = mapped_column(String(255), nullable=True)
@@ -139,7 +139,7 @@ class Customer(db.Model):
     state: Mapped[str] = mapped_column(String(120), nullable=False)
     zip_code: Mapped[str] = mapped_column(String(20), nullable=False)
     phone: Mapped[str] = mapped_column(String(20), nullable=True)
-    note: Mapped[str] = mapped_column(String(500))
+    note: Mapped[str] = mapped_column(String(500), nullable=True)
     create_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now())
 
@@ -186,7 +186,7 @@ class ServiceMaterial(db.Model):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     service_id: Mapped[int] = mapped_column(
         ForeignKey('services.id'), nullable=False)
-    name: Mapped[str] = mapped_column(String(120))
+    name: Mapped[str] = mapped_column(String(120), nullable=False)
     quantity: Mapped[Numeric] = mapped_column(Numeric(10, 2))
     unit_cost: Mapped[Numeric] = mapped_column(Numeric(10, 2))
 

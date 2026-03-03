@@ -11,16 +11,7 @@ export const Navbar = () => {
 				</button>
 				<div className="collapse navbar-collapse" id="navbarNavDropdown">
 					<ul className="navbar-nav">
-						<li className="nav-item dropdown">
-							<a className="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-								Login
-							</a>
-							<ul className="dropdown-menu">
-								<li> <Link to={'/login'}>Login</Link> </li>
-
-								<li><Link to={'/Loginprovider'} >Login</Link></li>
-							</ul>
-						</li>
+						
 						<li className="nav-item dropdown">
 							<a className="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
 								Sign up

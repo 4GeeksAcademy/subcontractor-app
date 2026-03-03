@@ -38,7 +38,7 @@ export const LoginProvider = () => {
                     token: data.token
                 }
             })
-
+            
             navigate('/providerDashboard')
 
         } catch (error) {
