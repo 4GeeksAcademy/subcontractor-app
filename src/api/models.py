@@ -7,11 +7,9 @@ from decimal import Decimal
 
 db = SQLAlchemy()
 
-
 class UserRole(enum.Enum):
     CONTRACTOR = "contractor"
     CUSTOMER = "customer"
-
 
 class JobStatus(enum.Enum):
     pending = "pending"

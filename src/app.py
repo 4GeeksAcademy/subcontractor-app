@@ -97,13 +97,13 @@ def register_stylist():
 
     user = User.query.filter_by(email=body['email']).first()
     if user != None:
-        return jsonify({'msg': 'This email already have an account'})
+        return jsonify({'msg': 'This email already have an account'}), 400
 
     new_user = User()
 
     new_user.name = body['name']
     new_user.email = body['email']
-    new_user.role = UserRole.PROVIDER
+    new_user.role = UserRole.CONTRACTOR
     new_user.is_active = True
     pw_hash = bcrypt.generate_password_hash(body['password']).decode('utf-8')
     new_user.password = pw_hash

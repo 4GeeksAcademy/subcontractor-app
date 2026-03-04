@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: bd86821a5b59
+Revision ID: adaf2718f230
 Revises: 
-Create Date: 2026-03-03 19:51:21.540380
+Create Date: 2026-03-04 04:05:52.805139
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'bd86821a5b59'
+revision = 'adaf2718f230'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -34,9 +34,9 @@ def upgrade():
     sa.Column('user_id', sa.Integer(), nullable=False),
     sa.Column('business_name', sa.String(length=120), nullable=False),
     sa.Column('description', sa.String(length=500), nullable=False),
-    sa.Column('address', sa.String(length=120), nullable=False),
-    sa.Column('latitude', sa.Float(), nullable=False),
-    sa.Column('longitude', sa.Float(), nullable=False),
+    sa.Column('address', sa.String(length=120), nullable=True),
+    sa.Column('latitude', sa.Float(), nullable=True),
+    sa.Column('longitude', sa.Float(), nullable=True),
     sa.Column('phone', sa.String(length=20), nullable=False),
     sa.Column('logo_image', sa.String(), nullable=False),
     sa.Column('cover_image', sa.String(length=500), nullable=False),
@@ -48,7 +48,7 @@ def upgrade():
     sa.Column('subscription_status', sa.Enum('free', 'trial', 'active', 'past_due', 'canceled', name='subscriptionstatus'), nullable=False),
     sa.Column('plan_type', sa.String(length=50), nullable=True),
     sa.Column('subscription_renewal_date', sa.DateTime(timezone=True), nullable=True),
-    sa.Column('tax_rate', sa.Numeric(precision=10, scale=2), nullable=False),
+    sa.Column('tax_rate', sa.Numeric(precision=10, scale=2), nullable=True),
     sa.Column('currency', sa.String(length=10), nullable=False),
     sa.Column('invoice_prefix', sa.String(length=10), nullable=False),
     sa.Column('stripe_account_id', sa.String(length=255), nullable=True),
@@ -72,7 +72,7 @@ def upgrade():
     sa.Column('state', sa.String(length=120), nullable=False),
     sa.Column('zip_code', sa.String(length=20), nullable=False),
     sa.Column('phone', sa.String(length=20), nullable=True),
-    sa.Column('note', sa.String(length=500), nullable=False),
+    sa.Column('note', sa.String(length=500), nullable=True),
     sa.Column('create_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
     sa.ForeignKeyConstraint(['contractor_id'], ['contractor.id'], ),
     sa.PrimaryKeyConstraint('id'),

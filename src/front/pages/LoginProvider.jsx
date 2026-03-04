@@ -27,19 +27,21 @@ export const LoginProvider = () => {
             const data = await resp.json()
             console.log(data)
 
-            if (resp.ok)
+            if (resp.ok) {
                 localStorage.setItem('provider', JSON.stringify(data.provider))
                 localStorage.setItem('token', data.token)
 
-            dispatch({
-                type: 'login-provider',
-                payload: {
-                    provider: data.provider,
-                    token: data.token
-                }
-            })
-            
-            navigate('/providerDashboard')
+                dispatch({
+                    type: 'login-provider',
+                    payload: {
+                        provider: data.provider,
+                        token: data.token
+                    }
+                })
+
+                navigate('/providerDashboard')
+            }
+
 
         } catch (error) {
             console.error('Error de connexion en el servidedor', error)
