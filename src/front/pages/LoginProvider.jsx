@@ -38,6 +38,19 @@ export const LoginProvider = () => {
                         token: data.token
                     }
                 })
+                const modalElement = document.getElementById('loginModal');
+                if (modalElement) {
+                    modalElement.classList.remove('show')
+                    modalElement.style.display = 'none';
+
+                }
+
+
+                const backdrop = document.querySelector('.modal-backdrop')
+                if (backdrop) backdrop.remove();
+                document.body.classList.remove('modal-open');
+                document.body.style.overflow = 'auto';
+                document.body.style.paddingRight = '0'
 
                 navigate('/providerDashboard')
             }
@@ -66,7 +79,7 @@ export const LoginProvider = () => {
                     />
                 </div>
                 <div className="col-12">
-                    <button type="submit" className="btn btn-primary">Sign in</button>
+                    <button type="submit" className="btn btn-primary" >Sign in</button>
                 </div>
             </form>
         </div>

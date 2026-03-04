@@ -8,12 +8,12 @@ export const Navbar = () => {
 			<div className="container-fluid">
 				<a className="navbar-brand">Navbar</a>
 
-				<button type="button" className="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+				<button type="button" className="btn btn-primary" data-bs-toggle="modal" data-bs-target="#loginModal">
 					Launch static backdrop modal
 				</button>
 
-				<div className="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabIndex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-					<div className="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+				<div className="modal fade" id="loginModal" tabIndex="-1" aria-hidden="true">
+					<div className="modal-dialog modal-dialog-scrollable">
 						<div className="modal-content">
 							<div className="modal-header">
 								<h1 className="modal-title fs-5" id="staticBackdropLabel">Modal title</h1>
@@ -30,7 +30,7 @@ export const Navbar = () => {
 					</div>
 				</div>
 			</div>
-		</nav>
+		</nav >
 
 
 
