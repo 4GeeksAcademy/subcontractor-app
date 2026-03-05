@@ -1,12 +1,13 @@
 import { useState } from "react"
 import useGlobalReducer from "../hooks/useGlobalReducer.jsx";
 import { Navigate, useNavigate } from "react-router-dom";
-
+import Swal from "sweetalert2";
 
 export const LoginProvider = () => {
 
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
+    const [errorMessage, setErrorMessage] = useState(null)
     const { store, dispatch } = useGlobalReducer();
 
     const navigate = useNavigate()
@@ -25,7 +26,6 @@ export const LoginProvider = () => {
                 })
             })
             const data = await resp.json()
-            console.log(data)
 
             if (resp.ok) {
                 localStorage.setItem('provider', JSON.stringify(data.provider))
@@ -37,7 +37,9 @@ export const LoginProvider = () => {
                         provider: data.provider,
                         token: data.token
                     }
+
                 })
+                console.log(data)
                 const modalElement = document.getElementById('loginModal');
                 if (modalElement) {
                     modalElement.classList.remove('show')
@@ -45,25 +47,39 @@ export const LoginProvider = () => {
 
                 }
 
-
                 const backdrop = document.querySelector('.modal-backdrop')
                 if (backdrop) backdrop.remove();
                 document.body.classList.remove('modal-open');
                 document.body.style.overflow = 'auto';
                 document.body.style.paddingRight = '0'
 
-                navigate('/providerDashboard')
-            }
+                Swal.fire({
+                    position: "top-end",
+                    icon: "success",
+                    title: "Login succesfully",
+                    showConfirmButton: false,
+                    timer: 1500
+                });
 
+                navigate('/providerDashboard')
+            } else {
+                setErrorMessage(data.msg)
+            }
 
         } catch (error) {
             console.error('Error de connexion en el servidedor', error)
+            setErrorMessage('Error de connexion al servidedor')
         }
 
     }
 
     return (
         <div>
+            {errorMessage && (
+                <div className="alert alert-danger">
+                    {errorMessage}
+                </div>
+            )}
             <form onSubmit={handleLogin}
                 className="row g-3">
                 <div className="col-12">
@@ -78,10 +94,13 @@ export const LoginProvider = () => {
                         onChange={(e) => setPassword(e.target.value)} value={password}
                     />
                 </div>
-                <div className="col-12">
-                    <button type="submit" className="btn btn-primary" >Sign in</button>
+                <div className="col-12 text-center">
+                    <button type="submit" className="ps-4 pe-4 btn btn-primary fs-3" >Sign in</button>
                 </div>
             </form>
+            <div className="text-center mt-2">
+                <button className="bg-white border-top-0 border-start-0 border-end-0 border-bottom border-danger">Create/Forgot password</button>
+            </div>
         </div>
     )
 }
