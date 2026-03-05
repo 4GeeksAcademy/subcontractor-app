@@ -10,7 +10,7 @@ import { Home } from "./pages/Home";
 import { Single } from "./pages/Single";
 import { Demo } from "./pages/Demo";
 import { Login } from "./pages/Login";
-// import { LoginProvider } from "./pages/LoginProvider";
+import { LoginProvider } from "./pages/LoginProvider";
 import { SignUpClient } from "./pages/SignUpClient";
 import { SignUpProvider } from "./pages/SignUpProvider";
 import { ProviderDashboard } from "./pages/dashboardProvider/ProviderDashboard"
@@ -27,7 +27,7 @@ export const router = createBrowserRouter(
         <Route path="/single/:theId" element={<Single />} />  {/* Dynamic route for single items */}
         <Route path="/demo" element={<Demo />} />
         <Route path="/login" element={<Login />} />
-        {/* <Route path="/loginprovider" element={<LoginProvider />} /> */}
+        <Route path="/loginprovider" element={<LoginProvider />} />
         <Route path="/signupclient" element={<SignUpClient />} />
 
         <Route
