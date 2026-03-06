@@ -1,9 +1,24 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { LoginProvider } from "../pages/LoginProvider";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAddressBook, faUser } from "@fortawesome/free-regular-svg-icons";
+import { useEffect } from "react";
+
 
 export const Navbar = () => {
+
+	const location = useLocation();
+	useEffect(() => {
+		const params = new URLSearchParams(location.search);
+
+		if (params.get("openLogin") === "true") {
+			const modalElement = document.getElementById('loginModal');
+			if (modalElement) {
+				const busModal = new window.bootstrap.Modal(modalElement);
+				busModal.show();
+			}
+		}
+	}, [location]);
 
 	return (
 		<nav className="navbar bg-body-tertiary">
@@ -28,8 +43,8 @@ export const Navbar = () => {
 								<h5 className="p-3"> If you don't have an account:</h5>
 							</div>
 							<div className="text-center p-2">
-								<Link className="border border-primary rounded-1 p-3 "  style={{textDecoration:'none' }} to={'/signupprovider'} >
-								<strong className="" data-bs-dismiss="modal"> SIGN UP HERE </strong>  </Link>
+								<Link className="border border-primary rounded-1 p-3 " style={{ textDecoration: 'none' }} to={'/signupprovider'} >
+									<strong className="" data-bs-dismiss="modal"> SIGN UP HERE </strong>  </Link>
 							</div>
 						</div>
 					</div>

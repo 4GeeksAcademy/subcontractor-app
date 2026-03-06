@@ -24,16 +24,16 @@ export const SignUpProvider = () => {
             const data = await response.json()
 
             if (response.ok) {
+                // ... dentro de handleRegister, cuando response.ok es true
                 Swal.fire({
                     title: "Registered successfully!",
-                    text: "Your account has been created. Please log in to access your dashboard.",
+                    text: "Your account has been created. Opening login...",
                     icon: "success",
                     confirmButtonText: "Go to Login",
                     confirmButtonColor: "#035aa6"
                 }).then((result) => {
-                    if (result.isConfirmed) {
-                        navigate("/loginprovider");
-                    }
+                    // Redirigimos al Home con un parámetro en la URL
+                    navigate("/?openLogin=true");
                 });
             } else {
                 Swal.fire({
@@ -62,17 +62,17 @@ export const SignUpProvider = () => {
                     <div class="col-12">
                         <label for="inputAddress2" class="form-label">Full Name</label>
                         <input type="text" class="form-control" id="inputAddress2" placeholder="Enter Full name"
-                            onChange={handleChange} name="name" />
+                            onChange={handleChange} name="name" value={form.name} />
                     </div>
                     <div class="col-md-12">
                         <label for="inputEmail4" class="form-label">Email</label>
                         <input type="email" class="form-control" id="inputEmail4" placeholder="Enter Email"
-                            onChange={handleChange} name="email" />
+                            onChange={handleChange} name="email" value={form.email} />
                     </div>
                     <div class="col-md-12">
                         <label for="inputPassword4" class="form-label">Password</label>
                         <input type="password" class="form-control" id="inputPassword4" placeholder="Enter Password"
-                            onChange={handleChange} name="password" />
+                            onChange={handleChange} name="password" value={form.password} />
                     </div>
                     <div class="col-12">
                         <button type="submit" class="btn btn-primary">Sign Up</button>

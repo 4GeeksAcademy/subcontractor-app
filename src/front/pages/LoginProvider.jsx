@@ -41,20 +41,23 @@ export const LoginProvider = () => {
                 })
                 console.log(data)
                 const modalElement = document.getElementById('loginModal');
-                if (modalElement) {
-                    modalElement.classList.remove('show')
-                    modalElement.style.display = 'none';
+                if (modalElement && modalElement.classList.contains('show')) {
+                    const bootstrapModal = window.bootstrap.Modal.getInstance(modalElement)
+                    if (bootstrapModal) {
+                        bootstrapModal.hide()
+                    } else {
+                        modalElement.classList.remove('show')
+                        modalElement.style.display = 'none'
+                        const backdrop = document.querySelector('.modal-backdrop')
+                        if (backdrop) backdrop.remove();
+                        document.body.classList.remove('modal-open');
+                        document.body.style.overflow = 'auto';
 
+                    }
                 }
 
-                const backdrop = document.querySelector('.modal-backdrop')
-                if (backdrop) backdrop.remove();
-                document.body.classList.remove('modal-open');
-                document.body.style.overflow = 'auto';
-                document.body.style.paddingRight = '0'
-
                 Swal.fire({
-                    position: "top-end",
+                    position: "center",
                     icon: "success",
                     title: "Login succesfully",
                     showConfirmButton: false,

@@ -88,11 +88,11 @@ def register_stylist():
     body = request.get_json(silent=True)
     if body is None:
         return jsonify({'msg': 'All fields required'}), 400
-    if 'name' not in body:
+    if not body.get('name') or body.get('name').strip() == "":
         return jsonify({'msg': 'Name is required'}), 400
-    if 'email' not in body:
+    if not body.get('email') or body.get('email').strip() == "":
         return jsonify({'msg': 'Email is required'}), 400
-    if 'password' not in body:
+    if not body.get('password') or body.get('password').strip() == "":
         return jsonify({'msg': 'Password is required'}), 400
 
     user = User.query.filter_by(email=body['email']).first()
