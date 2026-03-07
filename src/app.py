@@ -134,7 +134,7 @@ def login_stylist():
     return jsonify({
         'msg': 'login successfully',
         'token': access_token,
-        'stylist_data': user.serialize()}), 200
+        'provider': user.serialize()}), 200
 
 # this endpoint is for the clients
 

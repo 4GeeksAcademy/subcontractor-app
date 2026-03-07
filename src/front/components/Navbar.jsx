@@ -1,13 +1,26 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { LoginProvider } from "../pages/LoginProvider";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faAddressBook, faUser } from "@fortawesome/free-regular-svg-icons";
+import { faUser } from "@fortawesome/free-regular-svg-icons";
 import { useEffect } from "react";
-
+import useGlobalReducer from "../hooks/useGlobalReducer";
 
 export const Navbar = () => {
 
+	const { store, dispatch } = useGlobalReducer()
+	const navigate = useNavigate()
 	const location = useLocation();
+
+	console.log('este es store.provider del store:', store.provider)
+
+	const handleLogout = () => {
+
+		localStorage.removeItem('provider'),
+			localStorage.removeItem('token')
+		dispatch({ type: 'logout' })
+		navigate('/loginprovider')
+	}
+
 	useEffect(() => {
 		const params = new URLSearchParams(location.search);
 
@@ -20,14 +33,30 @@ export const Navbar = () => {
 		}
 	}, [location]);
 
+
+
 	return (
 		<nav className="navbar bg-body-tertiary">
 			<div className="container-fluid">
 				<a className="navbar-brand">Navbar</a>
-
-				<button type="button" className="btn btn-primary" data-bs-toggle="modal" data-bs-target="#loginModal">
-					<span>  <FontAwesomeIcon icon={faUser} size="" color="" /> </span> SIGN IN
-				</button>
+				<div className="d-flex align-items-center">
+					{
+						!store.provider ? (
+							<button type="button" className="btn btn-primary" data-bs-toggle="modal" data-bs-target="#loginModal">
+								<span>  <FontAwesomeIcon icon={faUser} size="" color="" /> </span> SIGN IN
+							</button>
+						) : (
+							<div className="dropdown">
+								<button className="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+									{store.provider?.name || store.provider?.email || User}
+								</button>
+								<ul className="dropdown-menu mt-2">
+									<li ><button className="dropdown-item text-danger" onClick={handleLogout}>Logout</button></li>
+								</ul>
+							</div>
+						)
+					}
+				</div>
 
 				<div className="modal fade" id="loginModal" tabIndex="-1" aria-hidden="true">
 					<div className="modal-dialog modal-dialog-scrollable">
@@ -51,34 +80,5 @@ export const Navbar = () => {
 				</div>
 			</div>
 		</nav >
-
-
-
-
-
-
-		// <nav classNameName="navbar navbar-expand-lg bg-body-tertiary">
-		// 	<div classNameName="container-fluid">
-		// 		<a classNameName="navbar-brand" href="#">Navbar</a>
-		// 		<button classNameName="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
-		// 			<span classNameName="navbar-toggler-icon"></span>
-		// 		</button>
-		// 		<div classNameName="collapse navbar-collapse" id="navbarNavDropdown">
-		// 			<ul classNameName="navbar-nav">
-
-		// 				<li classNameName="nav-item dropdown">
-		// 					<a classNameName="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-		// 						Sign up
-		// 					</a>
-		// 					<ul classNameName="dropdown-menu">
-		// 							<li><Link to={'/signupclient'} >Sin up </Link></li>
-
-		// 							
-		// 					</ul>
-		// 				</li>
-		// 			</ul>
-		// 		</div>
-		// 	</div>
-		// </nav>
 	);
 };
