@@ -18,7 +18,7 @@ export const Navbar = () => {
 		localStorage.removeItem('provider'),
 			localStorage.removeItem('token')
 		dispatch({ type: 'logout' })
-		navigate('/loginprovider')
+		navigate("/?openLogin=true");
 	}
 
 	useEffect(() => {
