@@ -12,6 +12,24 @@ export const LoginProvider = () => {
 
     const navigate = useNavigate()
 
+    const closeModal = () => {
+        const modalElement = document.getElementById('loginModal');
+        if (modalElement) {
+            const bootstrapModal = window.bootstrap.Modal.getInstance(modalElement);
+            if (bootstrapModal) {
+                bootstrapModal.hide();
+            } else {
+                // Método alternativo para cerrar
+                modalElement.classList.remove('show');
+                modalElement.style.display = 'none';
+                const backdrop = document.querySelector('.modal-backdrop');
+                if (backdrop) backdrop.remove();
+                document.body.classList.remove('modal-open');
+                document.body.style.overflow = 'auto';
+            }
+        }
+    }
+
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
@@ -40,22 +58,10 @@ export const LoginProvider = () => {
 
                 })
                 console.log(data)
-                const modalElement = document.getElementById('loginModal');
-                if (modalElement && modalElement.classList.contains('show')) {
-                    const bootstrapModal = window.bootstrap.Modal.getInstance(modalElement)
-                    if (bootstrapModal) {
-                        bootstrapModal.hide()
-                    } else {
-                        modalElement.classList.remove('show')
-                        modalElement.style.display = 'none'
-                        const backdrop = document.querySelector('.modal-backdrop')
-                        if (backdrop) backdrop.remove();
-                        document.body.classList.remove('modal-open');
-                        document.body.style.overflow = 'auto';
 
-                    }
-                }
-                
+                // Cerrar modal antes de mostrar SweetAlert
+                closeModal();
+
                 Swal.fire({
                     position: "center",
                     icon: "success",

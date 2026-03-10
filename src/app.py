@@ -2,6 +2,8 @@
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
 import os
+from dotenv import load_dotenv
+load_dotenv()
 from flask import Flask, request, jsonify, url_for, send_from_directory
 from flask_migrate import Migrate
 from flask_swagger import swagger
@@ -25,7 +27,7 @@ ENV = "development" if os.getenv("FLASK_DEBUG") == "1" else "production"
 static_file_dir = os.path.join(os.path.dirname(
     os.path.realpath(__file__)), '../dist/')
 app = Flask(__name__)
-CORS(app, origins="*")
+CORS(app, origins=["http://localhost:3000"])
 bcrypt = Bcrypt(app)
 
 
@@ -157,7 +159,7 @@ def register_client():
 
     new_user.name = body['name']
     new_user.email = body['email']
-    new_user.role = UserRole.CLIENT
+    new_user.role = UserRole.CUSTOMER
     new_user.is_active = True
     pw_hash = bcrypt.generate_password_hash(body['password']).decode('utf-8')
     new_user.password = pw_hash
