@@ -28,8 +28,7 @@ export const SignUpProvider = () => {
                 },
                 body: JSON.stringify(form)
             });
-            const text = await response.text()
-            console.log(text);
+
             const data = await response.json()
 
             console.log('Response status:', response.status);

@@ -19,7 +19,6 @@ export const LoginProvider = () => {
             if (bootstrapModal) {
                 bootstrapModal.hide();
             } else {
-                // Método alternativo para cerrar
                 modalElement.classList.remove('show');
                 modalElement.style.display = 'none';
                 const backdrop = document.querySelector('.modal-backdrop');
@@ -57,9 +56,7 @@ export const LoginProvider = () => {
                     }
 
                 })
-                console.log(data)
 
-                // Cerrar modal antes de mostrar SweetAlert
                 closeModal();
 
                 Swal.fire({
