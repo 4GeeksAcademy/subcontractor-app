@@ -45,6 +45,7 @@ export const LoginProvider = () => {
             const data = await resp.json()
 
             if (resp.ok) {
+                localStorage.setItem('name', data.provider.name)
                 localStorage.setItem('provider', JSON.stringify(data.provider))
                 localStorage.setItem('token', data.token)
 

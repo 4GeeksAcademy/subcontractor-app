@@ -17,7 +17,7 @@ export const Sidebar = ({ isCollapsed, toggleCollapse, isMobile, isMobileOpen, t
     const location = useLocation();
 
     const menuItems = [
-        { name: "Dashboard", icon: BiGridAlt, path: "/dashboard" },
+        { name: "Dashboard", icon: BiGridAlt, path: "/providerdashboard" },
         { name: "Estimate Requests", icon: BiFile, path: "/dashboard/estimates" },
         { name: "Jobs", icon: BiBriefcase, path: "/dashboard/jobs" },
         { name: "Customers", icon: BiGroup, path: "/dashboard/customers" },

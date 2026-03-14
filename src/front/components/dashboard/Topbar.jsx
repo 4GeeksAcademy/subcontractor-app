@@ -9,16 +9,29 @@ import {
     BiCog,
     BiLogOut
 } from "react-icons/bi";
+import { useNavigate } from "react-router-dom";
+import useGlobalReducer from "../../hooks/useGlobalReducer";
 
 export const Topbar = ({ isMobile }) => {
     const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+    const { store, dispatch } = useGlobalReducer()
+    const navigate = useNavigate()
 
     const mobileMenuItems = [
         { name: "Payments", icon: BiCreditCard, path: "/dashboard/payments" },
         { name: "Portfolio", icon: BiFolder, path: "/dashboard/portfolio" },
         { name: "Settings", icon: BiCog, path: "/dashboard/settings" }
     ];
+
+    const handleLogout = () => {
+        localStorage.removeItem('provider')
+        localStorage.removeItem('token')
+        dispatch({ type: 'logout' })
+        setIsProfileDropdownOpen(false)
+        navigate('/')
+    };
 
     return (
         <header className="topbar">
@@ -56,7 +69,7 @@ export const Topbar = ({ isMobile }) => {
                                     <div className="profile-avatar">
                                         <BiUser className="profile-avatar-icon" />
                                     </div>
-                                    <span className="profile-name">John Doe</span>
+                                    <span className="profile-name"> {store.provider ? store.provider.name : 'Contractor'}</span>
                                     <BiChevronDown className={`profile-dropdown-icon ${isProfileDropdownOpen ? 'rotate' : ''}`} />
                                 </button>
 
@@ -80,10 +93,10 @@ export const Topbar = ({ isMobile }) => {
                                             Settings
                                         </a>
                                         <hr className="profile-menu-divider" />
-                                        <a href="#" className="profile-menu-item profile-menu-logout">
+                                        <button onClick={handleLogout} className="profile-menu-item profile-menu-logout">
                                             <BiLogOut className="profile-menu-icon" />
                                             Logout
-                                        </a>
+                                        </button>
                                     </div>
                                 )}
                             </div>
@@ -119,10 +132,10 @@ export const Topbar = ({ isMobile }) => {
                                 );
                             })}
                             <hr className="mobile-menu-divider" />
-                            <a href="#" className="mobile-menu-item mobile-menu-logout">
+                            <button onClick={handleLogout} className="mobile-menu-item mobile-menu-logout">
                                 <BiLogOut className="mobile-menu-icon" />
                                 Logout
-                            </a>
+                            </button>
                         </div>
                     </div>
                 )}
