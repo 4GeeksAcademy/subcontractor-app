@@ -76,6 +76,17 @@ export const Navbar = () => {
 		}
 	}, [location]);
 
+	useEffect(() => {
+		const params = new URLSearchParams(location.search);
+		if (params.get('action') === 'login') {
+
+			const loginButton = document.querySelector('[data-bs-target="#loginModal"]');
+			if (loginButton) loginButton.click();
+
+			window.history.replaceState({}, document.title, "/");
+		}
+	}, [location]);
+
 	return (
 		<nav className="navbar bg-body-tertiary">
 			<div className="container-fluid">

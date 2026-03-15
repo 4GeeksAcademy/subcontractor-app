@@ -30,7 +30,7 @@ export const Topbar = ({ isMobile }) => {
         localStorage.removeItem('token')
         dispatch({ type: 'logout' })
         setIsProfileDropdownOpen(false)
-        navigate('/')
+        navigate('/?action=login')
     };
 
     return (

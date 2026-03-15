@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import useGlobalReducer from "../../hooks/useGlobalReducer";
 import {
     BiGridAlt,
     BiFile,
@@ -15,6 +16,7 @@ import {
 
 export const Sidebar = ({ isCollapsed, toggleCollapse, isMobile, isMobileOpen, toggleMobile }) => {
     const location = useLocation();
+    const { store, dispatch } = useGlobalReducer()
 
     const menuItems = [
         { name: "Dashboard", icon: BiGridAlt, path: "/providerdashboard" },
@@ -31,6 +33,16 @@ export const Sidebar = ({ isCollapsed, toggleCollapse, isMobile, isMobileOpen, t
     const isActive = (path) => {
         return location.pathname === path || location.pathname.startsWith(path + "/");
     };
+
+    const getInitials = (name) => {
+        if (!name) return "CT";
+        const nameArray = name.split(" ")
+        if (nameArray.length === 1) {
+            return nameArray[0].charAt(0).toUpperCase()
+        }
+        return nameArray[0].charAt(0) + nameArray[nameArray.length - 1].charAt(0).toUpperCase()
+    }
+    console.log("debuging name", store.provider)
 
     return (
         <>
@@ -95,10 +107,12 @@ export const Sidebar = ({ isCollapsed, toggleCollapse, isMobile, isMobileOpen, t
                     <div className="sidebar-user p-3 border-top">
                         <div className="d-flex align-items-center">
                             <div className="sidebar-user-avatar me-3">
-                                <span className="sidebar-user-initials">JD</span>
+                                <span className="sidebar-user-initials">
+                                    {store.provider ? getInitials(store.provider.name) : "CT"}
+                                </span>
                             </div>
                             <div className="flex-grow-1">
-                                <p className="sidebar-user-name mb-0">John Doe</p>
+                                <p className="sidebar-user-name mb-0"> {store.provider ? store.provider?.name : "Contractor"} </p>
                                 <p className="sidebar-user-role mb-0">Provider</p>
                             </div>
                         </div>

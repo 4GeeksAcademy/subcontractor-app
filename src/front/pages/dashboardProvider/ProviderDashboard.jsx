@@ -1,7 +1,11 @@
 import { useEffect } from "react";
 import { DashboardLayout } from "../../components/dashboard/DashboardLayout";
+import useGlobalReducer from "../../hooks/useGlobalReducer";
 
 export const ProviderDashboard = () => {
+
+    const { store, dispatch } = useGlobalReducer()
+
     useEffect(() => {
         const backdrops = document.querySelectorAll('.modal-backdrop');
         backdrops.forEach(b => b.remove());
@@ -15,7 +19,7 @@ export const ProviderDashboard = () => {
         <DashboardLayout>
             <div className="dashboard-welcome-section">
                 <div className="dashboard-welcome-content">
-                    <h1 className="dashboard-welcome-title">Welcome back, John!</h1>
+                    <h1 className="dashboard-welcome-title">Welcome back, {store.provider ? store.provider?.name : "Contractor"}!</h1>
                     <p className="dashboard-welcome-subtitle">Here's what's happening with your business today.</p>
                 </div>
             </div>
