@@ -63,13 +63,11 @@ export const Navbar = () => {
 					const busModal = new window.bootstrap.Modal(modalElement);
 					busModal.show();
 
-					// Marcar que el modal ya fue abierto en esta sesión
 					sessionStorage.setItem('modalOpened', 'true');
 				}
-			}, 100); // 100ms delay
+			}, 100);
 		}
 
-		// Limpiar el parámetro de la URL después de procesar
 		if (params.get("openLogin") === "true") {
 			const newUrl = window.location.pathname;
 			window.history.replaceState({}, '', newUrl);

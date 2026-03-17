@@ -1,0 +1,246 @@
+/* ========================================
+   JOB CARD CSS
+   ======================================== */
+
+.job-card {
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 12px;
+    padding: 1.25rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.job-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    border-color: #3b82f6;
+}
+
+.job-card.grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.job-card.list {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 1rem;
+}
+
+.job-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.job-card-title h4 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0 0 0.5rem 0;
+    line-height: 1.3;
+}
+
+.job-card-meta {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.job-status {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.job-status.status-pending {
+    background: #f8f9fa;
+    color: #6c757d;
+}
+
+.job-status.status-progress {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.job-status.status-completed {
+    background: #e8f5e8;
+    color: #2e7d32;
+}
+
+.job-status.status-cancelled {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.job-priority {
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.job-priority.priority-low {
+    background: #e8f5e8;
+    color: #2e7d32;
+}
+
+.job-priority.priority-medium {
+    background: #fff3e0;
+    color: #f57c00;
+}
+
+.job-priority.priority-high {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.job-priority.priority-urgent {
+    background: #ffcdd2;
+    color: #b71c1c;
+}
+
+.job-card-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.job-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.job-card-description p {
+    font-size: 0.875rem;
+    color: #6c757d;
+    margin: 0;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.job-card-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.job-info-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.job-info-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+.job-info-item i {
+    font-size: 0.875rem;
+    color: #3b82f6;
+}
+
+.job-progress {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #495057;
+}
+
+.progress {
+    height: 8px;
+    background: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
+    transition: width 0.3s ease;
+}
+
+.job-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #f8f9fa;
+}
+
+.job-tags {
+    display: flex;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+}
+
+.job-tag {
+    background: #f8f9fa;
+    color: #6c757d;
+    padding: 0.125rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 500;
+}
+
+.job-tag-more {
+    background: #e9ecef;
+    color: #495057;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .job-card {
+        padding: 1rem;
+    }
+    
+    .job-card.list {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    
+    .job-card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+    
+    .job-info-row {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .job-card-footer {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+    }
+}

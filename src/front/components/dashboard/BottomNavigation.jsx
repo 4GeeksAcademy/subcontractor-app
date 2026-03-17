@@ -13,11 +13,11 @@ export const BottomNavigation = () => {
 
     const menuItems = [
         { name: "Dashboard", icon: BiGridAlt, path: "/providerdashboard" },
-        { name: "Estimates", icon: BiFile, path: "/dashboard/estimates" },
-        { name: "Jobs", icon: BiBriefcase, path: "/dashboard/jobs" },
-        { name: "Customers", icon: BiGroup, path: "/dashboard/customers" },
-        { name: "Invoices", icon: BiReceipt, path: "/dashboard/invoices" },
-        { name: "Services", icon: BiCog, path: "/dashboard/services" }
+        { name: "Estimates", icon: BiFile, path: "/providerdashboard/estimates" },
+        { name: "Jobs", icon: BiBriefcase, path: "/providerdashboard/jobs" },
+        { name: "Customers", icon: BiGroup, path: "/providerdashboard/customers" },
+        { name: "Invoices", icon: BiReceipt, path: "/providerdashboard/invoices" },
+        { name: "Services", icon: BiCog, path: "/providerdashboard/services" }
     ];
 
     const isActive = (path) => {

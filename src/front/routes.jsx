@@ -14,8 +14,9 @@ import { LoginProvider } from "./pages/LoginProvider";
 import { SignUpClient } from "./pages/SignUpClient";
 import { SignUpProvider } from "./pages/SignUpProvider";
 import { ProviderDashboard } from "./pages/dashboardProvider/ProviderDashboard"
+import { DashboardHome } from "./pages/dashboardProvider/DashboardHome"
 import { PrivateProviderRoute } from "./pages/dashboardProvider/PrivateProviderRoute"
-
+import { JobsPage } from "./pages/jobs"
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
@@ -35,9 +36,15 @@ export const router = createBrowserRouter(
           element={
             <PrivateProviderRoute>
               <ProviderDashboard />
+
+
             </PrivateProviderRoute>
           }
-        />
+        >
+          {/* Nested routes for dashboard sections */}
+          <Route index element={<DashboardHome />} />
+          <Route path="jobs" element={<JobsPage />} />
+        </Route>
 
       </Route>
 
