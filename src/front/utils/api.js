@@ -12,7 +12,11 @@ const api = axios.create({
 // Request interceptor to add auth token
 api.interceptors.request.use(
     (config) => {
-        const token = localStorage.getItem('access_token');
+        const token = localStorage.getItem('token') || localStorage.getItem('provider');
+
+        console.log(localStorage.getItem('provider'));
+console.log(localStorage.getItem('token'));
+
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
@@ -21,19 +25,18 @@ api.interceptors.request.use(
     (error) => {
         return Promise.reject(error);
     }
+    
 );
 
-// Response interceptor to handle common errors
+
 api.interceptors.response.use(
-    (response) => {
-        return response;
-    },
+    (response) => response,
     (error) => {
         if (error.response?.status === 401) {
-            // Token expired or invalid
-            localStorage.removeItem('access_token');
-            localStorage.removeItem('user_info');
-            window.location.href = '/?openLogin=true';
+            localStorage.removeItem('token');
+            localStorage.removeItem('provider');
+            localStorage.removeItem('name');
+            window.location.href = '/loginprovider';
         }
         return Promise.reject(error);
     }

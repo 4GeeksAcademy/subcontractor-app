@@ -48,11 +48,11 @@ export const JobFilters = ({ filters, onFiltersChange }) => {
         });
     };
 
-    const hasActiveFilters = filters.status !== 'all' || 
-                           filters.category !== 'all' || 
-                           filters.priority !== 'all' || 
-                           filters.dateRange !== 'all' || 
-                           filters.search !== '';
+    const hasActiveFilters = filters.status !== 'all' ||
+        filters.category !== 'all' ||
+        filters.priority !== 'all' ||
+        filters.dateRange !== 'all' ||
+        filters.search !== '';
 
     return (
         <div className="job-filters">
@@ -220,7 +220,7 @@ export const JobFilters = ({ filters, onFiltersChange }) => {
             {hasActiveFilters && (
                 <div className="job-filters-summary">
                     <small className="text-muted">
-                        Active filters: 
+                        Active filters:
                         {filters.status !== 'all' && <span className="badge bg-primary me-1">{filters.status}</span>}
                         {filters.category !== 'all' && <span className="badge bg-info me-1">{filters.category}</span>}
                         {filters.priority !== 'all' && <span className="badge bg-warning me-1">{filters.priority}</span>}

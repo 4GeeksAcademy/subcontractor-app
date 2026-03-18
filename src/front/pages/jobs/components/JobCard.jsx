@@ -32,21 +32,21 @@ export const JobCard = ({ job, viewMode = 'grid', onUpdate, onDelete }) => {
                     </div>
                 </div>
                 <div className="job-card-actions">
-                    <button 
+                    <button
                         className="btn btn-sm btn-outline-primary"
-                        onClick={() => {/* TODO: View details */}}
+                        onClick={() => {/* TODO: View details */ }}
                     >
                         <i className="bi bi-eye"></i>
                     </button>
-                    <button 
+                    <button
                         className="btn btn-sm btn-outline-success"
-                        onClick={() => {/* TODO: Update */}}
+                        onClick={() => {/* TODO: Update */ }}
                     >
                         <i className="bi bi-pencil"></i>
                     </button>
-                    <button 
+                    <button
                         className="btn btn-sm btn-outline-danger"
-                        onClick={() => {/* TODO: Delete */}}
+                        onClick={() => {/* TODO: Delete */ }}
                     >
                         <i className="bi bi-trash"></i>
                     </button>
@@ -57,7 +57,7 @@ export const JobCard = ({ job, viewMode = 'grid', onUpdate, onDelete }) => {
                 <div className="job-card-description">
                     <p>{job.description}</p>
                 </div>
-                
+
                 <div className="job-card-info">
                     <div className="job-info-row">
                         <div className="job-info-item">
@@ -88,8 +88,8 @@ export const JobCard = ({ job, viewMode = 'grid', onUpdate, onDelete }) => {
                             <span>{job.progress}%</span>
                         </div>
                         <div className="progress">
-                            <div 
-                                className="progress-bar" 
+                            <div
+                                className="progress-bar"
                                 style={{ width: `${job.progress}%` }}
                             ></div>
                         </div>

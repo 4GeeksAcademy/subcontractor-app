@@ -81,13 +81,13 @@ export const JobDetails = ({ job, onClose, onUpdate, onDelete }) => {
                         </div>
                     </div>
                     <div className="job-details-actions">
-                        <button 
+                        <button
                             className="btn btn-outline-primary btn-sm"
                             onClick={() => setIsEditing(!isEditing)}
                         >
                             <i className="bi bi-pencil"></i> Edit
                         </button>
-                        <button 
+                        <button
                             className="btn btn-outline-secondary btn-sm"
                             onClick={onClose}
                         >
@@ -99,25 +99,25 @@ export const JobDetails = ({ job, onClose, onUpdate, onDelete }) => {
                 {/* Tabs */}
                 <div className="job-details-tabs">
                     <div className="tab-nav">
-                        <button 
+                        <button
                             className={`tab-btn ${activeTab === 'details' ? 'active' : ''}`}
                             onClick={() => setActiveTab('details')}
                         >
                             <i className="bi bi-info-circle"></i> Details
                         </button>
-                        <button 
+                        <button
                             className={`tab-btn ${activeTab === 'timeline' ? 'active' : ''}`}
                             onClick={() => setActiveTab('timeline')}
                         >
                             <i className="bi bi-clock-history"></i> Timeline
                         </button>
-                        <button 
+                        <button
                             className={`tab-btn ${activeTab === 'documents' ? 'active' : ''}`}
                             onClick={() => setActiveTab('documents')}
                         >
                             <i className="bi bi-file-earmark"></i> Documents
                         </button>
-                        <button 
+                        <button
                             className={`tab-btn ${activeTab === 'workers' ? 'active' : ''}`}
                             onClick={() => setActiveTab('workers')}
                         >
@@ -190,8 +190,8 @@ export const JobDetails = ({ job, onClose, onUpdate, onDelete }) => {
                                                 <span>{job.progress}%</span>
                                             </div>
                                             <div className="progress">
-                                                <div 
-                                                    className="progress-bar" 
+                                                <div
+                                                    className="progress-bar"
                                                     style={{ width: `${job.progress}%` }}
                                                 ></div>
                                             </div>
@@ -314,7 +314,7 @@ export const JobDetails = ({ job, onClose, onUpdate, onDelete }) => {
                 <div className="job-details-footer">
                     <div className="status-actions">
                         {job.status === 'pending' && (
-                            <button 
+                            <button
                                 className="btn btn-info"
                                 onClick={() => handleStatusChange('in_progress')}
                             >
@@ -322,21 +322,21 @@ export const JobDetails = ({ job, onClose, onUpdate, onDelete }) => {
                             </button>
                         )}
                         {job.status === 'in_progress' && (
-                            <button 
+                            <button
                                 className="btn btn-success"
                                 onClick={() => handleStatusChange('completed')}
                             >
                                 <i className="bi bi-check-circle"></i> Complete Job
                             </button>
                         )}
-                        <button 
+                        <button
                             className="btn btn-danger"
                             onClick={handleDelete}
                         >
                             <i className="bi bi-trash"></i> Delete Job
                         </button>
                     </div>
-                    <button 
+                    <button
                         className="btn btn-secondary"
                         onClick={onClose}
                     >

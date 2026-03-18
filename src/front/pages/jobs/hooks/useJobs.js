@@ -28,6 +28,12 @@ export const useJobs = () => {
             const response = await api.get(`/api/jobs?${params.toString()}`);
             setJobs(response.data.jobs || []);
         } catch (err) {
+             // ✅ Agrega estos logs
+             
+        console.log("ERROR STATUS:", err.response?.status);
+        console.log("ERROR DATA:", err.response?.data);
+        console.log("ERROR COMPLETO:", err);
+
             setError(err.response?.data?.error || 'Failed to fetch jobs');
         } finally {
             setLoading(false);
@@ -41,6 +47,7 @@ export const useJobs = () => {
             setJobs(prev => [...prev, response.data]);
             return response.data;
         } catch (err) {
+             console.log("❌ ERROR:", err.response?.status, err.response?.data);
             setError(err.response?.data?.error || 'Failed to create job');
             throw err;
         } finally {

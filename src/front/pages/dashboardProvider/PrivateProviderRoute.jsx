@@ -4,6 +4,8 @@ export const PrivateProviderRoute = ({ children }) => {
 
     const token = localStorage.getItem("provider")
 
+    console.log("PrivateProviderRoute - token:", token)
+
     if (!token) {
         return <Navigate to="/loginprovider" />
     }

@@ -62,7 +62,7 @@ export const JobList = ({ jobs, loading, error, onUpdate, onDelete }) => {
                     </div>
                 </div>
             </div>
-            
+
             <div className={`job-list-content ${viewMode}`}>
                 {jobs.map(job => (
                     <JobCard

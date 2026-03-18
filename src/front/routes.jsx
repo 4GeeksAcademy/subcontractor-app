@@ -4,6 +4,7 @@ import {
   createBrowserRouter,
   createRoutesFromElements,
   Route,
+  useRouteError,
 } from "react-router-dom";
 import { Layout } from "./pages/Layout";
 import { Home } from "./pages/Home";
@@ -18,37 +19,43 @@ import { DashboardHome } from "./pages/dashboardProvider/DashboardHome"
 import { PrivateProviderRoute } from "./pages/dashboardProvider/PrivateProviderRoute"
 import { JobsPage } from "./pages/jobs"
 
+// Componente temporal para debug — ponlo arriba del router
+const ErrorDebug = () => {
+  const error = useRouteError(); // importa useRouteError de react-router-dom
+  return (
+    <div style={{ padding: "2rem", background: "red", color: "white" }}>
+      <h1>ERROR CAPTURADO:</h1>
+      <pre>{error?.message}</pre>
+      <pre>{error?.stack}</pre>
+    </div>
+  );
+};
+
 export const router = createBrowserRouter(
   createRoutesFromElements(
     <>
-      <Route path="/" element={<Layout />} errorElement={<h1>Not found!</h1>} >
+      <Route path="/" element={<Layout />} errorElement={<h1>Not found!</h1>}>
+        <Route index element={<Home />} />
+        <Route path="single/:theId" element={<Single />} />
+        <Route path="demo" element={<Demo />} />
+        <Route path="login" element={<Login />} />
+        <Route path="loginprovider" element={<LoginProvider />} />
+        <Route path="signupclient" element={<SignUpClient />} />
+      </Route>
 
-        {/* Nested Routes: Defines sub-routes within the BaseHome component. */}
-        <Route path="/" element={<Home />} />
-        <Route path="/single/:theId" element={<Single />} />  {/* Dynamic route for single items */}
-        <Route path="/demo" element={<Demo />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/loginprovider" element={<LoginProvider />} />
-        <Route path="/signupclient" element={<SignUpClient />} />
-
-        <Route
-          path="/providerdashboard"
-          element={
-            <PrivateProviderRoute>
-              <ProviderDashboard />
+      <Route
+        path="/providerdashboard"
+        element={<PrivateProviderRoute><ProviderDashboard /></PrivateProviderRoute>}
+        errorElement={<ErrorDebug />}  // ← ahora sí lo encuentra
+      >
 
 
-            </PrivateProviderRoute>
-          }
-        >
-          {/* Nested routes for dashboard sections */}
-          <Route index element={<DashboardHome />} />
-          <Route path="jobs" element={<JobsPage />} />
-        </Route>
-
+        <Route index element={<DashboardHome />} />
+        <Route path="jobs" element={<JobsPage />} />
       </Route>
 
       <Route path="/signupprovider" element={<SignUpProvider />} />
     </>
   )
 );
+

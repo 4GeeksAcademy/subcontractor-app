@@ -25,7 +25,7 @@ export const JobForm = ({ job, onSubmit, loading }) => {
             ...prev,
             [name]: value
         }));
-        
+
         // Clear error for this field
         if (errors[name]) {
             setErrors(prev => ({
@@ -46,14 +46,14 @@ export const JobForm = ({ job, onSubmit, loading }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        
+
         // Basic validation
         const newErrors = {};
         if (!formData.title.trim()) newErrors.title = 'Title is required';
         if (!formData.description.trim()) newErrors.description = 'Description is required';
         if (!formData.location.trim()) newErrors.location = 'Location is required';
         if (!formData.budget || formData.budget <= 0) newErrors.budget = 'Budget must be greater than 0';
-        
+
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
             return;
@@ -74,12 +74,12 @@ export const JobForm = ({ job, onSubmit, loading }) => {
             <div className="job-form-header">
                 <h3>{job ? 'Edit Job' : 'Create New Job'}</h3>
             </div>
-            
+
             <form onSubmit={handleSubmit} className="job-form-content">
                 {/* Basic Information */}
                 <div className="form-section">
                     <h4>Basic Information</h4>
-                    
+
                     <div className="mb-3">
                         <label htmlFor="title" className="form-label">Job Title *</label>
                         <input
@@ -129,7 +129,7 @@ export const JobForm = ({ job, onSubmit, loading }) => {
                 {/* Schedule and Budget */}
                 <div className="form-section">
                     <h4>Schedule & Budget</h4>
-                    
+
                     <div className="row">
                         <div className="col-md-6 mb-3">
                             <label htmlFor="startDate" className="form-label">Start Date *</label>
@@ -197,7 +197,7 @@ export const JobForm = ({ job, onSubmit, loading }) => {
                 {/* Status and Priority */}
                 <div className="form-section">
                     <h4>Status & Priority</h4>
-                    
+
                     <div className="row">
                         <div className="col-md-6 mb-3">
                             <label htmlFor="priority" className="form-label">Priority</label>
@@ -255,7 +255,7 @@ export const JobForm = ({ job, onSubmit, loading }) => {
                     <button
                         type="button"
                         className="btn btn-secondary me-2"
-                        onClick={() => {/* TODO: Cancel */}}
+                        onClick={() => {/* TODO: Cancel */ }}
                     >
                         Cancel
                     </button>
